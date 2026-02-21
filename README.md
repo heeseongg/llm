@@ -4,17 +4,17 @@ PyTorch로 작성한 최소 Character-level GPT(Decoder-only Transformer) 학습
 
 ## 현재 구현 내용
 
-- `src/model/transformer.py`
+- `src/llmfs/model/transformer.py`
   - `MultiHeadAttention` (causal mask)
   - `FeedForward`
   - `LayerNorm`
   - `TransformerBlock`
   - `TransformerLM` (`forward`는 logits 반환)
-- `src/data/dataset.py`
+- `src/llmfs/data/dataset.py`
   - `SimpleTextDataset` (`torch.utils.data.Dataset` 상속)
   - next-token prediction용 `input_ids`, `target_ids` 반환
   - char vocab 자동 생성 (`stoi`/`itos`)
-- `src/train/trainer.py`
+- `src/llmfs/train/trainer.py`
   - `Trainer(model, dataloader, config)`
   - `AdamW` optimizer 설정
   - 학습 루프 + cross entropy
@@ -29,6 +29,13 @@ PyTorch로 작성한 최소 Character-level GPT(Decoder-only Transformer) 학습
   - checkpoint 로드
   - greedy decoding 기반 `generate` 구현
   - prompt 입력받아 텍스트 생성
+- `src/llmfs/eval/perplexity.py`
+  - 토큰 단위 평균 NLL 계산
+  - perplexity 계산
+- `scripts/eval.py`
+  - checkpoint + 텍스트로 perplexity 평가
+- `scripts/train.py` + `src/llmfs/train/trainer.py`
+  - `eval_every` 주기로 validation perplexity 출력
 
 ## 설치
 
@@ -89,6 +96,10 @@ data:
   text_path: data/raw/input.txt
   encoding: utf-8
   block_size: 128
+  # 선택 1) 별도 검증 파일 지정
+  # val_text_path: data/raw/val.txt
+  # 선택 2) train 텍스트에서 자동 분할 (eval_every > 0일 때)
+  # val_split: 0.1
 
 model:
   max_seq_len: 128
@@ -110,6 +121,10 @@ train:
   num_epochs: 5
   checkpoint_dir: checkpoints
   save_every: 500
+  eval_every: 5
+  eval_batch_size: 32
+  save_best_checkpoint: true
+  best_checkpoint_name: best.pt
 ```
 
 ### 3) 학습 실행
@@ -118,13 +133,35 @@ train:
 py -3.11 scripts/train.py --config configs/train.yaml
 ```
 
+`eval_every > 0`이면 학습 로그에 아래 형태로 validation perplexity가 출력됩니다.
+
+```text
+[eval] epoch=... step=... train_loss=... val_nll=... val_ppl=...
+```
+
+`save_best_checkpoint: true`이면 validation perplexity가 개선될 때마다 `checkpoints/best.pt`가 갱신됩니다.
+
 ### 4) 샘플 생성
 
+먼저 생성된 체크포인트 파일명을 확인합니다.
+
 ```powershell
-py -3.11 scripts/sample.py --checkpoint checkpoints/ckpt_epoch1_step500.pt --config configs/train.yaml --prompt "Hello" --max_new_tokens 100
+Get-ChildItem checkpoints
+```
+
+그다음 실제 파일명으로 실행합니다.
+
+```powershell
+py -3.11 scripts/sample.py --checkpoint checkpoints/ckpt_epoch5_step75.pt --config configs/train.yaml --prompt "Hello" --max_new_tokens 100
 ```
 
 프롬프트를 인자로 주지 않으면 실행 중 `prompt>` 입력을 받습니다.
+
+### 5) perplexity 평가
+
+```powershell
+py -3.11 scripts/eval.py --checkpoint checkpoints/ckpt_epoch5_step75.pt --config configs/train.yaml
+```
 
 ## 체크포인트 형식
 

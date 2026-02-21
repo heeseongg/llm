@@ -24,3 +24,7 @@ train:
   num_epochs: 5
   checkpoint_dir: checkpoints
   save_every: 100
+  eval_every: 5
+  eval_batch_size: 32
+  save_best_checkpoint: true
+  best_checkpoint_name: best.pt
