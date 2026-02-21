@@ -1,0 +1,14 @@
+hello world.
+this is a tiny training corpus for smoke testing.
+we train a character-level language model with gpt-style decoder-only transformer.
+repeat this pattern to provide enough tokens for batching.
+
+hello world.
+this is a tiny training corpus for smoke testing.
+we train a character-level language model with gpt-style decoder-only transformer.
+repeat this pattern to provide enough tokens for batching.
+
+hello world.
+this is a tiny training corpus for smoke testing.
+we train a character-level language model with gpt-style decoder-only transformer.
+repeat this pattern to provide enough tokens for batching.
