@@ -2,11 +2,6 @@
 
 PyTorch로 작성한 최소 Character-level GPT(Decoder-only Transformer) 학습/샘플링 프로젝트입니다.
 
-## 목적
-
-LLM의 내부 구조(Attention, Causal Mask, Language Modeling)를 이해하기 위해
-PyTorch로 GPT-style Transformer를 직접 구현하는 것을 목표로 합니다.
-
 ## 현재 구현 내용
 
 - `src/model/transformer.py`
@@ -37,22 +32,55 @@ PyTorch로 GPT-style Transformer를 직접 구현하는 것을 목표로 합니�
 
 ## 설치
 
-```bash
-pip install -r requirements.txt
+### (A) 기본 GPU 설치 (권장: cu128)
+
+```powershell
+py -3.11 -m pip install --upgrade pip
+py -3.11 -m pip install torch==2.9.1 torchvision==0.24.1 torchaudio==2.9.1 --index-url https://download.pytorch.org/whl/cu128
+py -3.11 -m pip install -r requirements.txt
 ```
 
-## 의존성
+### (B) 개발 도구까지 설치
 
-- `torch>=2.2`
-- `numpy>=1.26`
-- `PyYAML>=6.0`
-- `tqdm>=4.66`
+```powershell
+py -3.11 -m pip install -r requirements-dev.txt
+```
+
+### 설치 후 GPU 인식 확인
+
+```powershell
+py -3.11 -c "import torch; print(torch.__version__, torch.cuda.is_available(), torch.version.cuda)"
+```
+
+### (C) fallback
+
+```powershell
+# 첫 fallback: cu126
+py -3.11 -m pip install --upgrade --force-reinstall torch==2.9.1 torchvision==0.24.1 torchaudio==2.9.1 --index-url https://download.pytorch.org/whl/cu126
+
+# 마지막 fallback: CPU
+py -3.11 -m pip install --upgrade --force-reinstall torch==2.9.1 torchvision==0.24.1 torchaudio==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+```
+
+## 의존성 파일
+
+- `requirements.txt` (runtime 최소)
+  - `PyYAML>=6.0`
+  - `tqdm>=4.66`
+- `requirements-dev.txt` (선택)
+  - `tensorboard>=2.17`
+  - `rich>=13.7`
+  - `black>=24.8`
+  - `ruff>=0.6`
+  - `pytest>=8.3`
+  - `ipykernel>=6.29`
 
 ## 빠른 시작
 
 ### 1) 학습 텍스트 준비
 
-`data/raw/input.txt` 파일을 생성하고 학습할 텍스트를 넣습니다.
+`data/raw/input.txt` 파일을 생성하고 학습 텍스트를 넣습니다.
+경로가 없으면 `data/raw/` 폴더를 먼저 생성한 뒤 파일을 만드세요.
 
 ### 2) 설정 파일 작성 (예: `configs/train.yaml`)
 
@@ -86,14 +114,14 @@ train:
 
 ### 3) 학습 실행
 
-```bash
-python scripts/train.py --config configs/train.yaml
+```powershell
+py -3.11 scripts/train.py --config configs/train.yaml
 ```
 
 ### 4) 샘플 생성
 
-```bash
-python scripts/sample.py --checkpoint checkpoints/ckpt_epoch1_step500.pt --config configs/train.yaml --prompt "Hello" --max_new_tokens 100
+```powershell
+py -3.11 scripts/sample.py --checkpoint checkpoints/ckpt_epoch1_step500.pt --config configs/train.yaml --prompt "Hello" --max_new_tokens 100
 ```
 
 프롬프트를 인자로 주지 않으면 실행 중 `prompt>` 입력을 받습니다.
@@ -108,8 +136,3 @@ python scripts/sample.py --checkpoint checkpoints/ckpt_epoch1_step500.pt --confi
 - `global_step`
 - `epoch`
 - `step`
-
-## 참고
-
-- 초기 스캐폴드로 생성된 `src/llmfs/...` 경로는 대부분 빈 상태이며,
-  현재 실행 코드 경로는 `src/model`, `src/data`, `src/train`, `scripts` 입니다.

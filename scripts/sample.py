@@ -13,7 +13,7 @@ SRC_DIR = ROOT_DIR / "src"
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
-from model.transformer import TransformerLM
+from llmfs.model.transformer import TransformerLM
 
 
 def load_yaml(path: Path) -> Dict[str, Any]:
@@ -50,7 +50,7 @@ def infer_model_kwargs(
     vocab_size = int(state_dict["lm_head.weight"].shape[0])
     d_model = int(state_dict["lm_head.weight"].shape[1])
     max_seq_len = int(state_dict["pos_emb.weight"].shape[0])
-    n_layers = int(model_cfg.get("n_layers", infer_n_layers(state_dict)))
+    n_layers = infer_n_layers(state_dict)
 
     if "blocks.0.ffn.net.0.weight" in state_dict:
         d_ff = int(state_dict["blocks.0.ffn.net.0.weight"].shape[0])
@@ -63,12 +63,12 @@ def infer_model_kwargs(
     dropout = float(model_cfg.get("dropout", 0.0))
 
     return {
-        "vocab_size": int(model_cfg.get("vocab_size", vocab_size)),
-        "max_seq_len": int(model_cfg.get("max_seq_len", max_seq_len)),
-        "d_model": int(model_cfg.get("d_model", d_model)),
+        "vocab_size": vocab_size,
+        "max_seq_len": max_seq_len,
+        "d_model": d_model,
         "n_heads": n_heads,
         "n_layers": n_layers,
-        "d_ff": int(model_cfg.get("d_ff", d_ff)),
+        "d_ff": d_ff,
         "dropout": dropout,
     }
 

@@ -13,9 +13,9 @@ SRC_DIR = ROOT_DIR / "src"
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
-from data.dataset import SimpleTextDataset
-from model.transformer import TransformerLM
-from train.trainer import Trainer
+from llmfs.data.dataset import SimpleTextDataset
+from llmfs.model.transformer import TransformerLM
+from llmfs.train.trainer import Trainer
 
 
 def load_yaml(path: Path) -> Dict[str, Any]:
